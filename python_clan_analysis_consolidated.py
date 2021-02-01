@@ -1,3 +1,5 @@
+# Process open ended text using NLP for sentiment analysis, similarity analysis and identifying ‘wh’ questions using NLTK, NumPy, Pandas, and Spacy.
+
 #import dependencies
 import pandas as pd
 #import statistics
