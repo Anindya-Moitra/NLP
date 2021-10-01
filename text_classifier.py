@@ -40,3 +40,19 @@ stop_words_custom.update(['zero', 'one', 'two', 'three', 'four', 'five', 'six', 
                           'ok', 'w', 'md', 'p', 'iii', 'iv', 'v', 'vi', 'vii', 'aa', 'aaa', 'aair', 'aaox', 'aap',
                           'aaron', 'ab', 'bs', 'igg', 'abc', 'abd', 'abdo', 'abfp', 'abg', 'abi', 'abid', 'abil',
                           'abilen', 'abilifi', 'abl'])
+
+
+data['Cleaned'] = data['Note'].apply(lambda x: " ".join([stemmer.stem(i) for i in re.sub("[^a-zA-Z0-9]", " ", x).split() if i not in stop_words_custom]).lower())
+
+X, y = data['Cleaned'], data['Target']
+
+cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=0)  # Initiate cross-validation object
+
+pipeline_svc = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 4), stop_words=stop_words_custom, sublinear_tf=True)),
+                         ('chi',  SelectKBest(chi2, k=25000)),
+                         ('clf', LinearSVC(C=4.0, penalty='l1', max_iter=1000, dual=False, random_state=0))
+                         ])
+
+scores_svc = cross_val_score(pipeline_svc, X, y, cv=cv)
+
+print("Linear SVC Mean Accuracy with 95%% CI: %0.2f (+/- %0.2f)" % (scores_svc.mean(), scores_svc.std() * 2))
