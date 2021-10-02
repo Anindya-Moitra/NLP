@@ -1,3 +1,6 @@
+# An unstructured text classifier built from the scratch. The text can be categorized into
+# two classes, so it's a binary classification task.
+
 import re
 import pandas as pd
 import nltk
@@ -56,3 +59,20 @@ pipeline_svc = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 4), stop_words
 scores_svc = cross_val_score(pipeline_svc, X, y, cv=cv)
 
 print("Linear SVC Mean Accuracy with 95%% CI: %0.2f (+/- %0.2f)" % (scores_svc.mean(), scores_svc.std() * 2))
+
+grid = ParameterGrid({"max_samples": [0.6, 0.8], "n_estimators": [11, 21, 31, 41, 51, 61, 71, 81, 91, 101],
+                      "bootstrap_features": [True, False]})
+
+
+# Find an optimal set of parameters for the classification model using a parameter grid.
+for param in grid:
+    print('\n')
+    print(param)
+    pipeline_rf = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 4), stop_words=stop_words_custom, sublinear_tf=True)),
+                            ('chi',  SelectKBest(chi2, k=25000)),
+                            ('clf', BaggingClassifier(random_state=20, **param))  # By default, the base estimator is a decision tree
+                            ])
+    scores_rf = cross_val_score(pipeline_rf, X, y, cv=cv)
+    print("Random Forest Mean Accuracy with 95%% CI: %0.2f (+/- %0.2f)" % (scores_rf.mean(), scores_rf.std() * 2))
+    print('\n')
+    print("=================================================================================")
