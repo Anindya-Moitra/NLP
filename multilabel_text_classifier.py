@@ -50,3 +50,20 @@ pipeline1 = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 4), stop_words=st
 scores = cross_val_score(pipeline1, X, y, cv=cv)
 
 print("Linear SVC Mean Accuracy with 95%% CI: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+grid = ParameterGrid({"max_samples": [0.6, 0.7, 0.8, 0.9, 1.0],
+                      "n_estimators": [101, 201, 301, 401, 501, 601, 701, 801, 901, 1001],
+                      "bootstrap_features": [True, False]})
+
+
+# Hyper-parameter tuning for the classification model using a parameter grid.
+for param in grid:
+    print(param)
+    pipeline2 = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 4), stop_words=stop_words_custom, sublinear_tf=True)),
+                          ('chi',  SelectKBest(chi2, k=25000)),
+                          ('clf', OneVsRestClassifier(BaggingClassifier(random_state=20, **param)))  # By default, the base estimator is a decision tree
+                         ])
+
+    scores = cross_val_score(pipeline2, X, y, cv=cv)
+    print("Mean Accuracy with 95%% CI: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    print("=================================================================================")
