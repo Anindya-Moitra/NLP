@@ -67,3 +67,31 @@ for param in grid:
     scores = cross_val_score(pipeline2, X, y, cv=cv)
     print("Mean Accuracy with 95%% CI: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
     print("=================================================================================")
+
+grid_refined = ParameterGrid({"max_samples": [0.6, 0.8],
+                              "n_estimators": [11, 21, 31, 41, 51, 61, 71, 81, 91],
+                              "bootstrap_features": [True]})
+
+for param in grid_refined:
+    print(param)
+    pipeline3 = Pipeline([('vect', TfidfVectorizer(ngram_range=(1, 4), stop_words=stop_words_custom, sublinear_tf=True)),
+                         ('chi',  SelectKBest(chi2, k=25000)),
+                         ('clf', OneVsRestClassifier(BaggingClassifier(random_state=20, **param)))  # By default, the base estimator is a decision tree
+                         ])
+
+    scores = cross_val_score(pipeline3, X, y, cv=cv)
+    print("Mean Accuracy with 95%% CI: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    print("=================================================================================")
+
+
+# model = pipeline.fit(X_train, y_train)
+# print("Test accuracy score: " + str(model.score(X_test, y_test)))
+# print("Training accuracy score: " + str(model.score(X_train, y_train)))
+# prediction = model.predict(X_test)
+
+model = pipeline1.fit(X, y)
+vectorizer = model.named_steps['vect']
+vectors = vectorizer.fit_transform(X)
+vectors
+
+vectorizer.get_feature_names()
