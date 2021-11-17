@@ -25,6 +25,25 @@ parameters = {
 
 
 # Run the grid search
-scoring = {'Accuracy': 'accuracy', 'Precision': 'precision_micro', 'Recall': 'recall_micro'}  # Multiple scores are to be computed during the grid search
-gs = GridSearchCV(rf_estimator, param_grid=parameters, scoring=scoring, refit='Recall', cv=5)  # Use recall (at this time) to find the best parameters for refitting the estimator at the end
+
+# Multiple scores are to be computed during the grid search
+scoring = {'Accuracy': 'accuracy', 'Precision': 'precision_micro', 'Recall': 'recall_micro'}
+
+# Use recall (at this time) to find the best parameters for refitting the estimator at the end
+gs = GridSearchCV(rf_estimator, param_grid=parameters, scoring=scoring, refit='Recall', cv=5)
 gs.fit(X_train, y_train)  # Run fit with all sets of parameters.
+
+# Retrieve the best estimator, i.e., the combination of parameters that gave best score (highest recall)
+# on the left out data during cross-validation
+rf_estimator = gs.best_estimator_
+
+
+# Fit the best random forest estimator to the training data
+rf_estimator.fit(X_train, y_train)
+
+
+print("Accuracy on the test set : ", rf_estimator.score(X_test, y_test))
+
+pred_test = rf_estimator.predict(X_test)
+print("Precision on the test set : ", metrics.precision_score(y_test, pred_test, average='micro'))
+print("Recall on the test set : ", metrics.recall_score(y_test, pred_test, average='micro'))
